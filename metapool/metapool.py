@@ -828,7 +828,7 @@ def format_sample_data(sample_ids, i7_name, i7_seq, i5_name, i5_seq,
     
     header = ','.join(['Lane','Sample_ID','Sample_Name','Sample_Plate',
                        'Sample_Well','I7_Index_ID','index','I5_Index_ID',
-                       'index2','Sample_Project','Description'])
+                       'index2','Sample_Project','Well_description'])
         
     data += header
 
