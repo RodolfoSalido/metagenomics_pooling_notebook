@@ -8,14 +8,17 @@ from scipy.stats import zscore
 from sklearn.linear_model import LogisticRegression
 from collections import OrderedDict
 from string import ascii_uppercase
-
+from metapool.mp_strings import EXPT_DESIGN_DESC_KEY, PM_PROJECT_NAME_KEY, \
+    PM_PROJECT_PLATE_KEY, PM_PROJECT_ABBREV_KEY, PM_COMPRESSED_PLATE_NAME_KEY
 
 EXPECTED_COLUMNS = {
-    'Plate Position', 'Primer Plate #', 'Plating', 'Extraction Kit Lot',
+    'Plate Position', 'Plate map file', 'Plate elution volume',
+    'Primer Plate #', 'Plating', 'Extraction Kit Lot',
     'Extraction Robot', 'TM1000 8 Tool', 'Primer Date', 'MasterMix Lot',
-    'Water Lot', 'Processing Robot', 'Sample Plate', 'Project_Name',
-    'Original Name', 'TM300 8 Tool', 'TM50 8 Tool', 'TM10 8 Tool', 'run_date',
-    'instrument_model', 'center_project_name', 'experiment_design_description'}
+    'Water Lot', 'Processing Robot', 'Sample Plate', PM_PROJECT_NAME_KEY,
+    PM_PROJECT_ABBREV_KEY, 'Original Name', 'TM300 8 Tool', 'TM50 8 Tool',
+    'TM10 8 Tool', 'run_date', 'instrument_model', 'center_project_name',
+    EXPT_DESIGN_DESC_KEY}
 
 
 class Message(object):
@@ -265,11 +268,15 @@ def dilute_gDNA(plate_df, threshold=15):
 
     # return a copy of the input data. Do not overwrite the input data by
     # default.
+    plate_df['extracted_gdna_concentration_ng_ul'] = \
+        plate_df['Sample DNA Concentration'].copy()
     df = plate_df.copy()
     df['Diluted'] = True
 
-    df['Project Plate'] = df['Project Plate'].astype(str) + '_diluted'
-    df['Compressed Plate Name'] = df['Compressed Plate Name'] + '_dilution'
+    df[PM_PROJECT_PLATE_KEY] = \
+        df[PM_PROJECT_PLATE_KEY].astype(str) + '_diluted'
+    df[PM_COMPRESSED_PLATE_NAME_KEY] = \
+        df[PM_COMPRESSED_PLATE_NAME_KEY] + '_dilution'
     df['Sample DNA Concentration'] = df['Sample DNA Concentration'] / 10
 
     # Picking diluted samples for normalization
@@ -326,7 +333,7 @@ def find_threshold(concentrations, labels):
 
 
 def autopool(plate_df, method='norm', pool_failures='low', automate=True,
-             offset=0.01, min_pool=100, total_vol=100, floor_conc=10,
+             offset=0.01, min_pool=100, total_vol=190, floor_conc=10,
              min_conc=0, total_nmol=0.0040):
     """
     reads a plate_df and calculates pooling volumes based on parameters.
@@ -340,7 +347,7 @@ def autopool(plate_df, method='norm', pool_failures='low', automate=True,
                      Relies on manually supplied params if Fase.
     :param offset:
     :param min_pool:
-    :param total_vol:
+    :param total_vol: (default = 190µL)
     :param floor_conc: lowest conc. for which sample will be accurately pooled.
     :param min_conc: min conc. for a sample to be considered for pooling.
                      Set to 0 to pool all samples regardless.
